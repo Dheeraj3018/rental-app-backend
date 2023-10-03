@@ -11,7 +11,7 @@ router.post("/register", registerController);
 
 router.post("/login", loginController);
 
-router.post("/forgot-password", forgotPasswordController);
+router.post("/forgotpassword", forgotPasswordController);
 
 router.get('/test', requireSignIn, isAdmin, testController);
 
