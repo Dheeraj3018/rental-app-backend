@@ -1,10 +1,12 @@
 import userModel from "../models/userModel.js";
+import productModel from "../models/productModel.js";
 import { comparePassword, hashPassword } from "../helpers/authHelper.js";
 import JWT from "jsonwebtoken";
 
 export const registerController = async (req, res) => {
   try {
-    const { name, email, password, phone, address, answer } = req.body;
+    const { name, email, password, phone, address, answer, role } = req.body;
+    console.log('Body :::', req.body, role)
     if (!name) {
       return res.send({ message: 'Name is Required' });
     }
@@ -25,9 +27,6 @@ export const registerController = async (req, res) => {
     }
 
 
-
-  
-
     const exisistingUser = await userModel.findOne({ email });
     if (exisistingUser) {
       return res.status(200).send({
@@ -35,7 +34,7 @@ export const registerController = async (req, res) => {
         message: "Already Register please login",
       });
     }
-      //Register user
+    //Register user
     const hashedPassword = await hashPassword(password);
     const user = await new userModel({
       name,
@@ -44,6 +43,7 @@ export const registerController = async (req, res) => {
       address,
       password: hashedPassword,
       answer,
+      role
     }).save();
 
     res.status(201).send({
@@ -103,6 +103,7 @@ export const loginController = async (req, res) => {
         email: user.email,
         phone: user.phone,
         adddress: user.address,
+        role: user.role,
       },
       token,
     });
@@ -135,11 +136,11 @@ export const forgotPasswordController = async (req, res) => {
     if (!user) {
       return res.status(404).send({
         success: false,
-        message: "Wrong Email or Answer"
-      })
+        message: "Wrong Email or Answer",
+      });
     }
-    const hashed = await hashPassword(newPassword)
-    await userModel.findByIdAndUpdate(user._id, { password: hashed })
+    const hashed = await hashPassword(newPassword);
+    await userModel.findByIdAndUpdate(user._id, { password: hashed });
     res.status(200).send({
       success: true,
       message: "Password reset Successfully",
@@ -166,3 +167,41 @@ export const testController = (req, res) => {
     res.send({ error });
   }
 };
+
+// Product Controller
+
+export const productController = async (req, res) => {
+  try {
+    console.log('req.body 1111 ::::', req.body)
+    const { name, price, image, description } = req.body.data;
+    const product = await new productModel({
+      name,
+      price,
+      image,
+      description
+    }).save();
+
+    res.status(200).send({
+      success: true,
+      message: 'Product Added Successfully',
+      product,
+    })
+  } catch (error) {
+    console.log(error)
+  }
+}
+export const getProductController = async (req, res) => {
+  console.log('Inside :::')
+  try {
+    const products = await productModel.find({});
+    console.log('product :::', products)
+
+    res.status(200).send({
+      success: true,
+      products,
+    })
+  } catch (error) {
+    console.log(error)
+  }
+}
+
